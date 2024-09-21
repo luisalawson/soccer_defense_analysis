@@ -17,11 +17,10 @@ project-root/
 │   │   └── season_service.py       # Funciones relacionadas con temporadas
 │   │
 │   ├── utils/
-│   │   ├── data_processing.py       # Funciones de procesamiento de datos
-│   │   └── statistics.py            # Funciones de cálculo de estadísticas
-│   │
-│   ├── main.py                     # Archivo principal para ejecutar el programa
-│   └── requirements.txt            # Dependencias del proyecto
+│       ├── data_processing.py       # Funciones de procesamiento de datos
+│       └── statistics.py            # Funciones de cálculo de estadísticas
+│   
+├── main.py                     # Archivo principal para ejecutar el programa
 │
-└── README.md                       # Documentación del proyecto
+└── Structure.txt                       # Documentación del proyecto
 
