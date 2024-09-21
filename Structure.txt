@@ -2,14 +2,17 @@ project-root/
 │
 ├── src/
 │   ├── data/
-│   │   ├── matchData.csv          # Tu dataset play by play
-│   │   └── seasonData.json        # Datos de la temporada (si los tienes)
+│   │   └── matchData.csv          # El dataset play by play
 │   │
 │   ├── models/
-│   │   ├── season.py               # Clase Temporada
-│   │   └── match.py                # Clase Partido
+│   │   ├── season.py                 # Clase Temporada
+│   │   ├── match.py                  # Clase Partido 
+│   │   ├── team.py                   # Clase Equipo 
+│   │   └── player.py                 # Clase Jugador
 │   │
 │   ├── services/
+│   │   ├── player_service.py        # Funciones relacionadas con jugadores
+│   │   ├── team_service.py        # Funciones relacionadas con equipos
 │   │   ├── match_service.py        # Funciones relacionadas con partidos
 │   │   └── season_service.py       # Funciones relacionadas con temporadas
 │   │
