@@ -1,0 +1,24 @@
+project-root/
+│
+├── src/
+│   ├── data/
+│   │   ├── matchData.csv          # Tu dataset play by play
+│   │   └── seasonData.json        # Datos de la temporada (si los tienes)
+│   │
+│   ├── models/
+│   │   ├── season.py               # Clase Temporada
+│   │   └── match.py                # Clase Partido
+│   │
+│   ├── services/
+│   │   ├── match_service.py        # Funciones relacionadas con partidos
+│   │   └── season_service.py       # Funciones relacionadas con temporadas
+│   │
+│   ├── utils/
+│   │   ├── data_processing.py       # Funciones de procesamiento de datos
+│   │   └── statistics.py            # Funciones de cálculo de estadísticas
+│   │
+│   ├── main.py                     # Archivo principal para ejecutar el programa
+│   └── requirements.txt            # Dependencias del proyecto
+│
+└── README.md                       # Documentación del proyecto
+
