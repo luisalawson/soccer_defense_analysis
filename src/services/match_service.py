@@ -2,33 +2,53 @@ import pandas as pd
 
 def match_outcome(df, home_team_id, away_team_id):
     '''
-    dado un df de un partido te calcula el outcome
-    rtype: int, int
+    Calcula el resultado de un partido dado un DataFrame.
+    Tiene en cuenta goles y goles en contra, buscando el próximo pase después del gol.
+    
+    rtype: int, int (goles del equipo local, goles del equipo visitante)
     '''
     home_score = 0
     away_score = 0
     match_df = df.reset_index(drop=True)
+
     for i, row in match_df.iterrows():
         team_id = row['team_id']
-        if team_id == home_team_id and row['description'] == 'Goal' and row['outcome'] == 1:
-            if i + 1 < len(match_df):
-                next_row = match_df.iloc[i + 1]
-                if next_row['team_id'] == home_team_id:
-                    away_score += 1
+        description = row['description']
+        outcome = row['outcome']
+        
+        # Si es un gol válido
+        if description == 'Goal' and outcome == 1:
+            next_pass_team_id = None
+
+            # Buscar el siguiente evento que sea un pase
+            for j in range(i + 1, len(match_df)):
+                next_event = match_df.iloc[j]
+                if next_event['description'] == 'Pass':
+                    next_pass_team_id = next_event['team_id']
+                    break  # Encontramos el siguiente pase, salimos del bucle
+
+            # Si encontramos el próximo pase
+            if next_pass_team_id is not None:
+                # Si el pase es del mismo equipo que anotó, es un autogol
+                if team_id == home_team_id and next_pass_team_id == home_team_id:
+                    away_score += 1  # Autogol del equipo local, cuenta para el equipo visitante
+                elif team_id == away_team_id and next_pass_team_id == away_team_id:
+                    home_score += 1  # Autogol del equipo visitante, cuenta para el equipo local
                 else:
-                    home_score += 1
+                    # Gol normal
+                    if team_id == home_team_id:
+                        home_score += 1
+                    else:
+                        away_score += 1
             else:
-                home_score += 1
-        elif team_id == away_team_id and row['description'] == 'Goal' and row['outcome'] == 1:
-            if i + 1 < len(match_df):
-                next_row = match_df.iloc[i + 1]
-                if next_row['team_id'] == away_team_id:
+                # No encontramos un pase, asumimos que es un gol normal
+                if team_id == home_team_id:
                     home_score += 1
                 else:
                     away_score += 1
-            else:
-                away_score += 1
+
     return home_score, away_score
+
 
 def categorize_dangerous(df):
     """
@@ -88,14 +108,14 @@ def group_plays(match_df, skip_events, stop_events):
                         if sum(play_in_danger_zone) > 3:
                             away_dangerous_play += 1
 
-                # Resetear variables de estado
+                
                 current_team = None
                 in_play = False
                 current_passes = 0
                 play_in_danger_zone = []
                 continue
 
-        # Si estamos en juego, actualizamos los datos
+        
         team_id = row['team_id']
         dangerous_area = row['dangerous_zone']
         play_in_danger_zone.append(dangerous_area)
@@ -109,7 +129,7 @@ def group_plays(match_df, skip_events, stop_events):
             if row['description'] == 'Pass' and row['outcome'] == 1:
                 current_passes += 1
         else:
-            # Si hay cambio de equipo, finalizamos la jugada
+            
             if in_play:
                 if current_team == home_team_id:
                     home_plays += 1
@@ -122,7 +142,7 @@ def group_plays(match_df, skip_events, stop_events):
                     if sum(play_in_danger_zone) > 3:
                         away_dangerous_play += 1
 
-            # Comenzamos la nueva jugada
+            
             current_team = team_id
             in_play = True
             current_passes = 0

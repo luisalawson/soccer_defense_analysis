@@ -43,10 +43,9 @@ def get_match_duration(match_df, match_id):
 
 def process_season_data(df):
     '''
-    crea temporadas y partidos a partir de un df
-    rtype: dict, lista
+    Crea temporadas y partidos a partir de un DataFrame.
+    Retorna un diccionario de temporadas y una lista de partidos.
     '''
-
     seasons = {}
     matches = []  
     unique_seasons = df['season_id'].unique()
@@ -62,25 +61,31 @@ def process_season_data(df):
             if team_name:
                 team_name_id_list.append((team_name, team_id))
 
-        if season not in seasons:
-            seasons[season] = Season(season, season_df, unique_matches, team_name_id_list)
+        season_matches = []  
 
-        for match in tqdm(unique_matches, desc="Processing Match", unit="match"):
-            match_df = season_df[season_df['match_id'] == match]
+        for match_id in tqdm(unique_matches, desc="Processing Match", unit="match"):
+            match_df = season_df[season_df['match_id'] == match_id]
             home_team = match_df['home_team_name'].iloc[0]
             home_team_id = next((team_id for name, team_id in team_name_id_list if name == home_team), None)
             away_team = match_df['away_team_name'].iloc[0]
-            away_team_id = next((team_id for name, team_id in team_name_id_list if name == home_team), None)
-            duration_data = get_match_duration(match_df, match)
+            away_team_id = next((team_id for name, team_id in team_name_id_list if name == away_team), None)
+            duration_data = get_match_duration(match_df, match_id)
+            
             if duration_data: 
                 date = duration_data[0]
                 first_half_duration = duration_data[1]
                 second_half_duration = duration_data[2]
                 total_duration = first_half_duration + second_half_duration
 
-                match_instance = Match(match, date, total_duration, home_team, away_team,home_team_id, away_team_id, match_df)
-                matches.append(match_instance)  
+                match_instance = Match(match_id, date, total_duration, home_team, away_team, home_team_id, away_team_id, match_df)
+                matches.append(match_instance)
+                season_matches.append(match_instance)  
 
-    return seasons, matches  
+        if season not in seasons:
+            seasons[season] = Season(season, season_df, season_matches, team_name_id_list)
+
+    return seasons, matches
+
+
 
 
