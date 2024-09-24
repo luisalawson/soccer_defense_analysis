@@ -72,9 +72,7 @@ class Match:
         self.dc_local = 0
         self.dc_away = 0
 
-    # def calculate_defensive_capacity(self):
-    #     self.dc_local = team_defensive_capacity(self.df, self.home_team, self.match_id)
-    #     self.dc_away = team_defensive_capacity(self.df, self.away_team, self.match_id)
+    
 
     def winner(self):
         if self.home_goals > self.away_goals:

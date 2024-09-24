@@ -27,8 +27,8 @@ class Season:
     def build_ranking(self):
         teams = {}
         for match in self.matches:
-            home = match.home_team
-            away = match.away_team
+            home = match.home_team.team_name  
+            away = match.away_team.team_name  
             match_points_home = match.points()[0]
             match_points_away = match.points()[1]
             goals_home = match.home_goals
@@ -50,16 +50,6 @@ class Season:
 
         sorted_teams = sorted(teams.items(), key=lambda x: (x[1][0], x[1][2]), reverse=True)
 
-        return sorted_teams
+        ranking = [(team_name, points[0], points[1], points[2]) for team_name, points in sorted_teams]
 
-
-
-
-        
-
-
-        
-
-    
-
-   
+        return ranking

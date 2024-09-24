@@ -16,36 +16,25 @@ def match_outcome(df, home_team_id, away_team_id):
         description = row['description']
         outcome = row['outcome']
         
-        # Si es un gol válido
         if description == 'Goal' and outcome == 1:
             next_pass_team_id = None
 
-            # Buscar el siguiente evento que sea un pase
             for j in range(i + 1, len(match_df)):
                 next_event = match_df.iloc[j]
                 if next_event['description'] == 'Pass':
                     next_pass_team_id = next_event['team_id']
-                    break  # Encontramos el siguiente pase, salimos del bucle
+                    break  
 
-            # Si encontramos el próximo pase
             if next_pass_team_id is not None:
-                # Si el pase es del mismo equipo que anotó, es un autogol
                 if team_id == home_team_id and next_pass_team_id == home_team_id:
-                    away_score += 1  # Autogol del equipo local, cuenta para el equipo visitante
+                    away_score += 1 
                 elif team_id == away_team_id and next_pass_team_id == away_team_id:
-                    home_score += 1  # Autogol del equipo visitante, cuenta para el equipo local
+                    home_score += 1  
                 else:
-                    # Gol normal
                     if team_id == home_team_id:
                         home_score += 1
                     else:
                         away_score += 1
-            else:
-                # No encontramos un pase, asumimos que es un gol normal
-                if team_id == home_team_id:
-                    home_score += 1
-                else:
-                    away_score += 1
 
     return home_score, away_score
 
@@ -150,86 +139,3 @@ def group_plays(match_df, skip_events, stop_events):
 
     return home_plays, away_plays, home_passes, away_passes
 
-
-# def team_defensive_capacity(df, team_name, match):
-#     team_players = df[(df['team_id'] == team_name) & (df['match_id'] == match)]['playerName'].unique()
-    
-#     player_stats = player_defensive_capacity(df, team_players, match)
-    
-#     total_capacity = sum(player['defensive_capacity'] for player in player_stats if 'defensive_capacity' in player)
-#     total_players = len(player_stats)
-    
-#     team_capacity = total_capacity / total_players if total_players > 0 else 0
-    
-#     return {
-#         'team_name': team_name,
-#         'match_id': match,
-#         'average_defensive_capacity': team_capacity,
-#         'player_stats': player_stats,
-#     }
-
-# def player_defensive_capacity(df, player_names, match):
-#     defensive_events = {
-#         'Interception': {'successful': 1},
-#         'Save': {'successful': 1},
-#         'Ball recovery': {'successful': 1},
-#         'Error': {'unsuccessful': 1},
-#         'Offside provoked': {'successful': 1},
-#         'Shield ball opp': {'successful': 1},
-#         'Challenge': {'unsuccessful': 0},
-#         'Foul': {'unsuccessful': 0},  
-#         'Tackle': {'successful': 1, 'unsuccessful': 0},
-#         'Clearance': {'successful': 1, 'unsuccessful': 0},
-#         'Aerial': {'successful': 1, 'unsuccessful': 0},
-#     }
-
-#     player_stats = []
-
-#     for player_name in player_names:
-#         if player_name in ['nan', 'NaN']:
-#             continue
-
-#         player_df = df[df['playerName'] == player_name]
-
-#         if not player_df.empty:
-#             team_id = player_df['team_id'].iloc[0] if not player_df['team_id'].empty else None
-#             position = next((pos for pos in player_df['playerPosition'] if pos.lower() != 'substitute'), None)
-
-#             stats = {
-#                 'player_name': player_name,
-#                 'team_id': team_id,
-#                 'position': position,
-#             }
-
-#             total_defensive_events = 0
-#             successful_defensive_events = 0
-
-#             for event, outcomes in defensive_events.items():
-#                 if event == 'Foul':
-#                     total_event_count = player_df[(player_df['description'] == event) & (player_df['outcome'] == 0)].shape[0]
-#                 else:
-#                     total_event_count = player_df[player_df['description'] == event].shape[0]
-
-#                 stats[f'total_{event.lower().replace(" ", "_")}'] = total_event_count
-#                 total_defensive_events += total_event_count
-
-#                 if 'successful' in outcomes:
-#                     if event == 'Foul':
-#                         successful_event_count = player_df[(player_df['description'] == event) & (player_df['outcome'] == 0)].shape[0]
-#                     else:
-#                         successful_event_count = player_df[(player_df['description'] == event) & (player_df['outcome'] == outcomes['successful'])].shape[0]
-
-#                     stats[f'successful_{event.lower().replace(" ", "_")}'] = successful_event_count
-#                     successful_defensive_events += successful_event_count
-
-#                 for outcome_name, outcome_value in outcomes.items():
-#                     if outcome_name != 'successful':
-#                         if event == 'Foul' and outcome_value == 1:
-#                             continue  
-#                         outcome_event_count = player_df[(player_df['description'] == event) & (player_df['outcome'] == outcome_value)].shape[0]
-#                         stats[f'{outcome_name}_{event.lower().replace(" ", "_")}'] = outcome_event_count
-
-#             stats['defensive_capacity'] = successful_defensive_events / total_defensive_events if total_defensive_events > 0 else 0
-#             player_stats.append(stats)
-
-#     return player_stats
