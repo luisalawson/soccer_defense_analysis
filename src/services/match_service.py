@@ -44,9 +44,16 @@ def categorize_dangerous(df):
     Clasifica las jugadas como peligrosas según su posición en el campo.
     :rtype: pandas.DataFrame
     """
+    #Luisa
+    # df_copy = df.copy()
+    # df_copy['dangerous_zone'] = df_copy['x'].apply(
+    #     lambda value: 1 if 0 <= float(value.replace(',', '.')) <= 30 else 0
+    # )
+
+    #Pato
     df_copy = df.copy()
     df_copy['dangerous_zone'] = df_copy['x'].apply(
-        lambda value: 1 if 0 <= float(value.replace(',', '.')) <= 30 else 0
+        lambda value: 1 if 0 <= value <= 30 else 0
     )
     
     return df_copy

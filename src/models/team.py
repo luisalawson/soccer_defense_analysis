@@ -1,4 +1,5 @@
 from src.services.team_service import team_defensive_capacity
+from src.services.team_service import team_ppda
 from src.utils.data_processing import load_data
 
 
@@ -10,6 +11,7 @@ class Team:
         self.results_home = results_home
         self.results_away = results_away
         self.defensive_capacity = team_defensive_capacity(self)
+        self.ppda = team_ppda(self, df=load_data('src/data/matchData.csv'))
 
     def wins(self):
         wins = 0
