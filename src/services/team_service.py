@@ -1,8 +1,7 @@
 
 import pandas as pd
-from src.services.player_service import player_defensive_capacity
 from src.utils.data_processing import load_data
-
+from src.services.player_service import player_defensive_capacity
 
 def team_defensive_capacity(team):
     team_players = team.players  
@@ -14,6 +13,11 @@ def team_defensive_capacity(team):
     team_capacity = total_capacity / total_players if total_players > 0 else 0
 
     return team_capacity
+
+def get_zone(x, y, num_zones=10):
+    zone_x = min(x // 10, num_zones - 1)
+    zone_y = min(y // 10, num_zones - 1)
+    return zone_x, zone_y
 
 def team_ppda(team, df=load_data('src/data/matchData.csv')):
     # Definir los eventos defensivos relevantes
@@ -52,3 +56,4 @@ def team_ppda(team, df=load_data('src/data/matchData.csv')):
     print(f"Equipo {team.team_id} | Pases permitidos: {num_opponent_passes} | Acciones defensivas: {num_defensive_actions} | PPDA: {ppda}")
 
     return ppda
+

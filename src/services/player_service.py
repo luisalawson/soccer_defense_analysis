@@ -1,5 +1,5 @@
 from src.utils.data_processing import load_data
-
+import math
 
 def player_defensive_capacity(player_names , df=load_data('src/data/matchData.csv')):
     defensive_events = {
@@ -75,3 +75,82 @@ def player_defensive_capacity(player_names , df=load_data('src/data/matchData.cs
 
     return player_stats
 
+def player_time(player, df=load_data('src/data/matchData.csv')):
+    player_name  =  player.player_name
+    team = player.player_team
+
+    matches = df[(df['home_team_name'] == team) | (df['away_team_name'] == team)]
+    unique_matches = matches['match_id'].unique()
+
+    total_time = 0
+
+    for match in unique_matches:
+        match_df = matches[matches['match_id'] == match]
+        players = match_df['playerName'].unique()
+
+        if player_name not in players:
+            continue
+
+        match_start = 0
+        match_end = match_df['min'].max()
+        player_start = match_start
+        player_end = match_end
+        for index, row in match_df.iterrows():
+            if row['description'] == 'Player on' and row['playerName'] == player_name:
+                player_start = row['min']
+            elif row['description'] == 'Player off' and row['playerName'] == player_name:
+                player_end = row['min']
+        
+        total_time += (player_end - player_start)
+
+    return total_time
+
+
+def player_passes(player, df=load_data('src/data/matchData.csv')):
+    ''' 
+    me da todos los pases que hizo
+    ademas, me da la distancia de los pases
+    la cantidad de pases largos (mas de 10 mts)
+    la cantidad de pases cortos (menos de 10mts)
+    '''
+    name = player.player_name
+    team = player.player_team
+
+    matches = df[(df['home_team_name'] == team) | (df['away_team_name'] == team)]
+    unique_matches = matches['match_id'].unique()
+
+    total_successful_passes = 0
+    total_unsuccessful_passes = 0
+    total_long_passes = 0
+    total_short_passes = 0
+
+    for match in unique_matches:
+        match_df = matches[matches['match_id'] == match]
+        players = match_df['playerName'].unique()
+
+        if name not in players:
+            continue
+
+        for index, row in match_df.iterrows():
+            if row['playerName'] == name:
+                if row['outcome'] == 1:
+                    start_x = float((row['x']).replace(',', '.'))
+                    if index + 1 < len(match_df):
+                        end_x_str = match_df.iloc[index + 1]['x']
+                        end_x = float(end_x_str.replace(',', '.'))
+                        pass_distance = abs(start_x - end_x)
+                        if pass_distance >= 7:
+                            total_long_passes += 1
+                        else:
+                            total_short_passes += 1
+                    total_successful_passes += 1
+                else:
+                    total_unsuccessful_passes += 1
+    
+    return {
+        'total_successful_passes': total_successful_passes,
+        'total_unsuccessful_passes': total_unsuccessful_passes,
+        'total_long_passes': total_long_passes,
+        'total_short_passes': total_short_passes
+    }
+    

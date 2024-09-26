@@ -75,52 +75,51 @@ def get_players(df):
     return starting_11
 
 
-
 def process_season_data(df):
     seasons = {}
-    matches = []  
+    matches = []
     unique_seasons = df['season_id'].unique()
     all_teams = {}
 
-    for season in tqdm(unique_seasons, desc="Processing Seasons", unit="season"):
-        season_df = df[df['season_id'] == season]
+    for season_id in tqdm(unique_seasons, desc="Processing Seasons", unit="season"):
+        season_df = df[df['season_id'] == season_id]
         unique_matches = season_df['match_id'].unique()
         unique_teams = season_df['home_team_id'].unique()
 
         team_name_id_list = []
-        for team_id in unique_teams:
+        for team_id in tqdm(unique_teams, desc="Processing Team", unit="team"):
             team_name = team_name_id_pair(season_df, team_id)
             if team_name:
                 team_name_id_list.append((team_name, team_id))
 
-                players_df = season_df[season_df['home_team_id'] == team_id]  
-                players_data = get_players(players_df) 
-                player_names = players_data['playerName'].tolist()  
-                player_positions = players_data['playerPosition'].tolist()  
+                players_df = season_df[season_df['home_team_id'] == team_id]
+                players_data = get_players(players_df)
+                player_names = players_data['playerName'].tolist()
+                player_positions = players_data['playerPosition'].tolist()
 
-                # Crear instancias de jugadores
-                players = [Player(name, team_name, position) for name,position in zip(player_names, player_positions)]  # No se pasa df aquí
+                season_instance = Season(season_id, season_df, [], team_name_id_list)
 
-                results_home = []  
-                results_away = []  
-                
-                team_instance = Team(team_id, team_name, players, results_home, results_away)
-                all_teams[team_id] = team_instance 
+                players = [Player(season_instance, name, team_name, position) for name, position in zip(player_names, player_positions)]
 
-        season_matches = []   
+                if team_id not in all_teams:
+                    all_teams[team_id] = Team(team_id, team_name, [], [], [])
+
+                all_teams[team_id].players.extend(players)
+
+        season_matches = []
 
         for match_id in tqdm(unique_matches, desc="Processing Match", unit="match"):
             match_df = season_df[season_df['match_id'] == match_id]
-            
+
             home_team_id = match_df['home_team_id'].iloc[0]
             away_team_id = match_df['away_team_id'].iloc[0]
-            
+
             home_team = all_teams.get(home_team_id)
             away_team = all_teams.get(away_team_id)
-            
+
             duration_data = get_match_duration(match_df, match_id)
-            
-            if duration_data: 
+
+            if duration_data:
                 date = duration_data[0]
                 first_half_duration = duration_data[1]
                 second_half_duration = duration_data[2]
@@ -128,15 +127,28 @@ def process_season_data(df):
 
                 match_instance = Match(match_id, date, total_duration, home_team, away_team, home_team_id, away_team_id, match_df)
                 matches.append(match_instance)
-                season_matches.append(match_instance)  
+                season_matches.append(match_instance)
 
                 result_home = (match_instance.home_goals, match_instance.away_goals)
                 result_away = (match_instance.away_goals, match_instance.home_goals)
                 home_team.results_home.append(result_home)
                 away_team.results_away.append(result_away)
 
-        if season not in seasons:
-            seasons[season] = Season(season, season_df, season_matches, team_name_id_list)
+                home_team.add_match(match_instance)  
+                away_team.add_match(match_instance)  
 
-    return seasons, matches, all_teams  
+        # for team in all_teams.values():
+        #     team.calculate_matrices()
+
+        season_instance.matches = season_matches
+        if season_id not in seasons:
+            seasons[season_id] = season_instance
+
+    return seasons, matches, all_teams
+
+
+
+
+
+
 

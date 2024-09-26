@@ -72,8 +72,6 @@ class Match:
         self.dc_local = 0
         self.dc_away = 0
 
-    
-
     def winner(self):
         if self.home_goals > self.away_goals:
             return self.home_team
