@@ -7,9 +7,6 @@ const REPO = process.env.GITHUB_REPOSITORY.split('/')[1];
 const OWNER = process.env.GITHUB_REPOSITORY.split('/')[0];
 const PR_NUMBER = process.env.GITHUB_PR_NUMBER;
 
-//  from https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#create-an-issue-comment 
-const GITHUB_API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/issues/${PR_NUMBER}/comments`
-
 async function getChangedFiles() {
     const filenames = []
     const octokit = new Octokit({
