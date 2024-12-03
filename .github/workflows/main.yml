@@ -1,0 +1,39 @@
+name: snap-in-code-checks
+
+on:
+  pull_request:
+
+env:
+  DIR: .github/workflows/scripts
+  NODE_OPTIONS: --max-old-space-size=4096
+
+jobs:
+  check-internal-keyword:
+    runs-on: ubuntu-latest
+    if: always() 
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install endpoint dependencies
+      run: |
+        cd ${{ env.DIR }}/endpoint-check
+        npm install
+
+    - name: Run internal keyword check
+      env:
+        # ref https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # ref https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows
+        PR_NUMBER: ${{ github.event.issue.number }}
+        # ref (https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context)
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        
+      run: |
+        node ${{ env.DIR }}/endpoint-check/endpoint-check.js
