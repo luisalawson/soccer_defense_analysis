@@ -29,8 +29,9 @@ jobs:
     - name: Run internal keyword check
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PR_NUMBER: ${{ github.event.issue.number }}
+        ISSUE_NUMBER: ${{ github.event.issue.number }}
         GITHUB_REPOSITORY: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
 
       run: |
         node ${{ env.DIR }}/endpoint-check/endpoint-check.js

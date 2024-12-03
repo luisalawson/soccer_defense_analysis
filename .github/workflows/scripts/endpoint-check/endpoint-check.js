@@ -5,7 +5,9 @@ import path from 'path';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY.split('/')[1];
 const OWNER = process.env.GITHUB_REPOSITORY.split('/')[0];
-const PR_NUMBER = process.env.GITHUB_PR_NUMBER;
+const ISSUE_NUMBER = process.env.ISSUE_NUMBER;
+const PR_NUMBER = process.env.PR_NUMBER;
+
 
 async function getChangedFiles() {
     const filenames = []
@@ -76,11 +78,12 @@ async function postComment(endpoints){
 }
 
 async function main() {
-    const changedFiles = await getChangedFiles();
-    const internalEndpoints = searchInternalKeyword(changedFiles);
-    if (internalEndpoints.length > 0) {
-        await postComment(internalEndpoints);
-    }
+    // const changedFiles = await getChangedFiles();
+    // const internalEndpoints = searchInternalKeyword(changedFiles);
+    // if (internalEndpoints.length > 0) {
+    //     await postComment(internalEndpoints);
+    // }
+    console.log(`issue number is ${ISSUE_NUMBER} and PR number is ${PR_NUMBER}`);
 }
 
 main();
