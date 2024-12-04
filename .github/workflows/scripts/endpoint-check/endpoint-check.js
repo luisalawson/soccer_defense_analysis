@@ -71,9 +71,20 @@ async function main() {
         const internalEndpoints = searchInternalKeyword(FILES);
 
         if (internalEndpoints.length > 0) {
-            await postComment(internalEndpoints);
+            // await postComment(internalEndpoints);
+            let commentBody = `Please explain why you are using the following internal endpoints:\n`;
+            internalEndpoints.forEach(([filePath, endpointList]) => {
+                commentBody += `- ${filePath}:\n`;
+                endpointList.forEach(endpoint => {
+                    commentBody += `  - ${endpoint}\n`;
+                });
+            });
+            let countEndpoints = internalEndpoints.reduce((acc, [_, endpointList]) => acc + endpointList.length, 0);
+            console.log(`Found ${countEndpoints} internal endpoints. Check for the following:\n${commentBody}`);
+            process.exit(1);
         } else {
             console.log("No internal endpoints detected.");
+            process.exit(0);
         }
     } catch (error) {
         console.error("Error in script execution:", error);
