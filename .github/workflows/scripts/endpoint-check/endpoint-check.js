@@ -35,7 +35,7 @@ function searchInternalKeyword(changedFiles) {
     return Array.from(internalEndpoints);
 }
 
-'/internal/works.get' 
+
 async function postComment(endpoints) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
