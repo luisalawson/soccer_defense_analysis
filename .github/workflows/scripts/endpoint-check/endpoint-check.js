@@ -6,7 +6,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY?.split('/')[1];
 const OWNER = process.env.GITHUB_REPOSITORY?.split('/')[0];
 const PR_NUMBER = process.env.PR_NUMBER;
-const FILES = process.env.FILES?.split(',').filter(Boolean); // Split by commas and clean up
+const FILES = process.env.FILES?.split(',').filter(Boolean); 
 
 if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER || !FILES) {
     console.error("Missing required environment variables.");
@@ -18,10 +18,10 @@ function searchInternalKeyword(changedFiles) {
 
     changedFiles.forEach(filePath => {
         try {
-            const absolutePath = path.resolve(filePath); // Resolve to absolute path
+            const absolutePath = path.resolve(filePath); 
             console.log(`Processing file: ${absolutePath}`);
-            const content = fs.readFileSync(absolutePath, 'utf-8'); // Read file content
-            const internalExp = /'\/internal\/[^']+'/g; // Regex for internal endpoints
+            const content = fs.readFileSync(absolutePath, 'utf-8'); 
+            const internalExp = /'\/internal\/[^']+'/g; /
             const endpointsFound = content.match(internalExp);
 
             if (endpointsFound) {
@@ -35,7 +35,7 @@ function searchInternalKeyword(changedFiles) {
     return Array.from(internalEndpoints);
 }
 
-
+'/internal/works.get'
 async function postComment(endpoints) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
