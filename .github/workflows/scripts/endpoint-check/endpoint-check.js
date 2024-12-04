@@ -11,7 +11,7 @@ const FILES = process.env.FILES?.split(',').filter(Boolean);
 if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER || !FILES) {
     console.error("Missing required environment variables.");
     process.exit(1);
-}
+} 
 
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = new Map();
