@@ -11,11 +11,13 @@ env:
 jobs:
   check-internal-keyword:
     runs-on: ubuntu-latest
-    if: always() 
+    if: always()
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -29,8 +31,16 @@ jobs:
 
     - id: changed
       run: |
-        FILES="$(git diff --name-only --diff-filter=ACM -r ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} '*.ts' '*.js')"
-        echo "files=$FILES" >> $GITHUB_OUTPUT
+        BASE_SHA="${{ github.event.pull_request.base.sha }}"
+        HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+        FILES=$(git diff --name-only --diff-filter=ACM "$BASE_SHA" "$HEAD_SHA" -- '*.ts' '*.js')
+        if [ -z "$FILES" ]; then
+          echo "No changed files detected."
+          echo "files=" >> $GITHUB_OUTPUT
+        else
+          echo "Changed files: $FILES"
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+        fi
 
     - name: Run internal keyword check
       env:
@@ -40,6 +50,5 @@ jobs:
         PR_NUMBER: ${{ github.event.pull_request.number }}
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
         FILES: ${{ steps.changed.outputs.files }} 
-
       run: |
         node ${{ env.DIR }}/endpoint-check/endpoint-check.js
