@@ -20,8 +20,8 @@ function searchInternalKeyword(changedFiles) {
             const absolutePath = path.resolve(filePath); 
             console.log(`Processing file: ${absolutePath}`);
             const content = fs.readFileSync(absolutePath, 'utf-8'); 
-            const internalExp = /'internal\/[^']+'/g; 
-            const endpointsFound = content.match(internalExp);
+            const combinedExp = /'\/internal\/[^']+'|'internal\/[^']+'/g;
+            const endpointsFound = content.match(combinedExp);
             if (endpointsFound) {
                 internalEndpoints.set(filePath, endpointsFound);
             }
