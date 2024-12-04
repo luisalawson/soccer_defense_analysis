@@ -5,31 +5,9 @@ import path from 'path';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY.split('/')[1];
 const OWNER = process.env.GITHUB_REPOSITORY.split('/')[0];
-const ISSUE_NUMBER = process.env.ISSUE_NUMBER;
 const PR_NUMBER = process.env.PR_NUMBER;
+const FILES = process.env.FILES;
 
-
-
-async function getChangedFiles() {
-    const filenames = []
-    const octokit = new Octokit({
-        auth: GITHUB_TOKEN
-    })
-    const response = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
-        owner: OWNER,
-        repo: REPO,
-        pull_number: PR_NUMBER,
-        headers: {
-        'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
-    for (const file of response.data) {
-        if(file.status === 'added' || file.status === 'modified'){
-            filenames.push(file.filename);
-        }
-    }
-    return filenames;
-}
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = new Map();
     function readFiles(directory) {
@@ -79,8 +57,7 @@ async function postComment(endpoints){
 }
  
 async function main() {
-    const changedFiles = await getChangedFiles();
-    const internalEndpoints = searchInternalKeyword(changedFiles);
+    const internalEndpoints = searchInternalKeyword(FILES);
     if (internalEndpoints.length > 0) {
         await postComment(internalEndpoints);
     }else{
@@ -91,13 +68,12 @@ async function main() {
             owner: OWNER,
             repo: REPO,
             issue_number: PR_NUMBER,
-            body: 'No internal endpoints found in the changed files',
+            body: 'Great job! No internal endpoints were found in the changed files 🚀',
             headers: {
             'X-GitHub-Api-Version': '2022-11-28'
             }
         })
     }
-    console.log(`FILES ${changedFiles} and files on main ${process.env.FILES}`);
 }
 
 main();

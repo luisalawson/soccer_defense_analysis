@@ -30,6 +30,7 @@ jobs:
         npm install
 
     - id: changed
+      name: Check changed files
       run: |
         BASE_SHA="${{ github.event.pull_request.base.sha }}"
         HEAD_SHA="${{ github.event.pull_request.head.sha }}"
@@ -45,10 +46,8 @@ jobs:
     - name: Run internal keyword check
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        ISSUE_NUMBER: ${{ github.event.issue.number }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
-        GITHUB_EVENT_NUMBER: ${{ github.event.number }}
         FILES: ${{ steps.changed.outputs.files }} 
       run: |
         node ${{ env.DIR }}/endpoint-check/endpoint-check.js
