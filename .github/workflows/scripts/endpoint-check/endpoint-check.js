@@ -9,6 +9,7 @@ const ISSUE_NUMBER = process.env.ISSUE_NUMBER;
 const PR_NUMBER = process.env.PR_NUMBER;
 
 
+
 async function getChangedFiles() {
     const filenames = []
     const octokit = new Octokit({
@@ -96,7 +97,7 @@ async function main() {
             }
         })
     }
-    console.log(`FILES ${changedFiles} and endpoints ${internalEndpoints}`);
+    console.log(`FILES ${changedFiles} and files on main ${process.env.FILES}`);
 }
 
 main();

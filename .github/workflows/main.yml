@@ -26,6 +26,12 @@ jobs:
       run: |
         cd ${{ env.DIR }}/endpoint-check
         npm install
+
+    - id: changed
+      run: |
+        FILES="$(git diff --name-only --diff-filter=ACM -r ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} '*.ts' '*.js')"
+        echo "files=$FILES" >> $GITHUB_OUTPUT
+
     - name: Run internal keyword check
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,6 +39,7 @@ jobs:
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
+        FILES: ${{ steps.changed.outputs.files }} 
 
       run: |
         node ${{ env.DIR }}/endpoint-check/endpoint-check.js
