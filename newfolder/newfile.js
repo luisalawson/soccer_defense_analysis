@@ -1,3 +1,3 @@
-// /internal/works.get
-// /internal/works.post
-// /internal/works.delete
+'/internal/works.get'
+'/internal/works.post'
+'/internal/works.delete'
