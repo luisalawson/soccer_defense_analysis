@@ -83,7 +83,7 @@ async function main() {
     // if (internalEndpoints.length > 0) {
     //     await postComment(internalEndpoints);
     // }
-    console.log(`issue number is ${ISSUE_NUMBER} and PR number is ${PR_NUMBER}`);
+    console.log(`issue number is ${ISSUE_NUMBER} and PR number is ${PR_NUMBER} and event number is ${process.env.GITHUB_EVENT_NUMBER}`);
 }
 
 main();
