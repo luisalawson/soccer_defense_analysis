@@ -82,8 +82,21 @@ async function main() {
     const internalEndpoints = searchInternalKeyword(changedFiles);
     if (internalEndpoints.length > 0) {
         await postComment(internalEndpoints);
+    }else{
+        const octokit = new Octokit({
+            auth: GITHUB_TOKEN
+        })
+        await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+            owner: OWNER,
+            repo: REPO,
+            issue_number: PR_NUMBER,
+            body: 'No internal endpoints found in the changed files',
+            headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+            }
+        })
     }
-    // console.log(`issue number is ${ISSUE_NUMBER} and PR number is ${PR_NUMBER} and event number is ${process.env.GITHUB_EVENT_NUMBER}`);
+    console.log(`FILES ${changedFiles} and endpoints ${internalEndpoints}`);
 }
 
 main();
