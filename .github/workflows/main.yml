@@ -28,7 +28,7 @@ jobs:
       run: |
         cd ${{ env.DIR }}/endpoint-check
         npm install
-# /internal/works.get
+# /internal/works.get 
     - id: changed
       name: Check changed files
       run: |
