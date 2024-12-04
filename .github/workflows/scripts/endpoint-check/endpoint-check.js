@@ -76,7 +76,7 @@ async function postComment(endpoints){
         }
     })
 }
-
+ 
 async function main() {
     const changedFiles = await getChangedFiles();
     const internalEndpoints = searchInternalKeyword(changedFiles);
