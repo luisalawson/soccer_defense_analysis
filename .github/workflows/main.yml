@@ -2,8 +2,6 @@ name: test-code-check
 
 on:
   pull_request:
-    branches:
-      - main
 
 env:
   DIR: .github/workflows/scripts
@@ -11,11 +9,13 @@ env:
 jobs:
   check-internal-keyword:
     runs-on: ubuntu-latest
-    if: always() 
+    if: always()
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -26,11 +26,29 @@ jobs:
       run: |
         cd ${{ env.DIR }}/endpoint-check
         npm install
+ 
+    - id: changed
+      name: Check changed files
+      run: |
+        BASE_SHA="${{ github.event.pull_request.base.sha }}"
+        HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+        FILES=$(git diff --name-only --diff-filter=ACM "$BASE_SHA" "$HEAD_SHA" -- '*.ts' '*.js')
+        if [ -z "$FILES" ]; then
+          echo "No changed files detected."
+          echo "files=" >> $GITHUB_OUTPUT
+        else
+          echo "Changed files: $FILES"
+          # Replace newlines with commas for GitHub Actions compatibility
+          FILES=$(echo "$FILES" | tr '\n' ',')
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+        fi
+
+
     - name: Run internal keyword check
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PR_NUMBER: ${{ github.event.issue.number }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         GITHUB_REPOSITORY: ${{ github.repository }}
-
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        FILES: ${{ steps.changed.outputs.files }} 
       run: |
         node ${{ env.DIR }}/endpoint-check/endpoint-check.js
