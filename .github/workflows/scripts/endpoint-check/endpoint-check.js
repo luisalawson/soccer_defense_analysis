@@ -21,7 +21,7 @@ function searchInternalKeyword(changedFiles) {
             const absolutePath = path.resolve(filePath); 
             console.log(`Processing file: ${absolutePath}`);
             const content = fs.readFileSync(absolutePath, 'utf-8'); 
-            const internalExp = /'\/internal\/[^']+'/g; /
+            const internalExp = /'\/internal\/[^']+'/g; 
             const endpointsFound = content.match(internalExp);
 
             if (endpointsFound) {
@@ -35,7 +35,7 @@ function searchInternalKeyword(changedFiles) {
     return Array.from(internalEndpoints);
 }
 
-'/internal/works.get'
+'/internal/works.get' 
 async function postComment(endpoints) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
