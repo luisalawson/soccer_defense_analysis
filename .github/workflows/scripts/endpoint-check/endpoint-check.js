@@ -34,7 +34,7 @@ function searchInternalKeyword(changedFiles) {
     readFiles('.');
     return Array.from(internalEndpoints);
 }
-
+// /internal/test.one
 async function postComment(endpoints){
     let commentBody = `Please explain why you are using the following internal endpoints:\n`;
     endpoints.forEach(([filePath, endpoint]) => {

@@ -28,7 +28,7 @@ jobs:
       run: |
         cd ${{ env.DIR }}/endpoint-check
         npm install
-
+# /internal/works.get
     - id: changed
       name: Check changed files
       run: |
@@ -45,7 +45,7 @@ jobs:
 
     - name: Run internal keyword check
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # /internal/works.list
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         FILES: ${{ steps.changed.outputs.files }} 
