@@ -40,8 +40,11 @@ jobs:
           echo "files=" >> $GITHUB_OUTPUT
         else
           echo "Changed files: $FILES"
+          # Replace newlines with commas for GitHub Actions compatibility
+          FILES=$(echo "$FILES" | tr '\n' ',')
           echo "files=$FILES" >> $GITHUB_OUTPUT
         fi
+
 
     - name: Run internal keyword check
       env:
