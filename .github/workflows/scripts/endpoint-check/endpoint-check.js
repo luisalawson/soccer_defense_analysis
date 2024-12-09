@@ -15,6 +15,7 @@ if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
 
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
+    
     changedFiles.forEach(filePath => {
         try {
             const absolutePath = path.resolve(filePath); 
@@ -23,19 +24,15 @@ function searchInternalKeyword(changedFiles) {
             const combinedExp = /'\/internal\/[^']+'|'internal\/[^']+'/g;
             const endpointsFound = content.match(combinedExp);
             if (endpointsFound) {
-                const uniqueEndpoints = new Set(endpointsFound);
-                uniqueEndpoints.forEach(endpoint => {
-                    internalEndpoints.push([filePath, endpoint]);
-                });
+                const uniqueEndpoints = Array.from(new Set(endpointsFound));
+                internalEndpoints.push([filePath, uniqueEndpoints]);
             }
         } catch (error) {
             console.error(`Error reading file ${filePath}:`, error);
         }
     });
-
     return internalEndpoints;
 }
-
 
 
 async function postComment(endpoints) {
