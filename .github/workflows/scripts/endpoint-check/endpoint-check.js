@@ -12,6 +12,7 @@ if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     console.error("Missing required environment variables.");
     process.exit(1);
 } 
+//      `${endpoint}/internal/recommendations.chat.completions`,
 
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
