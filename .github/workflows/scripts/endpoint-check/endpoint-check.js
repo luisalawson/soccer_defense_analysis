@@ -13,6 +13,8 @@ if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     process.exit(1);
 } 
 
+// `${REPO}/internal/recommendations.chat.completions`
+
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
     
@@ -21,7 +23,7 @@ function searchInternalKeyword(changedFiles) {
             const absolutePath = path.resolve(filePath); 
             console.log(`Processing file: ${absolutePath}`);
             const content = fs.readFileSync(absolutePath, 'utf-8'); 
-            const combinedExp = /'\/internal\/[^']+'|'internal\/[^']+'/g;
+            const combinedExp = /\/internal\/[^']+'|internal\/[^']+'/g;
             const endpointsFound = content.match(combinedExp);
             if (endpointsFound) {
                 const uniqueEndpoints = Array.from(new Set(endpointsFound));
@@ -34,17 +36,16 @@ function searchInternalKeyword(changedFiles) {
     return internalEndpoints;
 }
 
-
 async function postComment(endpoints) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
-    let commentBody = `Please explain why you are using the following internal endpoints:\n`;
+    let commentBody = `Hey! I noticed you are using the following internal endpoints:\n`;
     endpoints.forEach(([filePath, endpointList]) => {
         commentBody += `- ${filePath}:\n`;
         endpointList.forEach(endpoint => {
             commentBody += `  - ${endpoint}\n`;
         });
     });
-    commentBody += `\nPlease follow the steps on this document: https://docs.google.com/document/d/1AMwAvWqhR-6HYIF32iB2Ecjv3IfqqoQSXX1ObzcOk8E/edit?usp=sharing `;
+    commentBody += `\nInternal endpoints shouldn't be used, please follow the steps on this document: https://docs.google.com/document/d/1AMwAvWqhR-6HYIF32iB2Ecjv3IfqqoQSXX1ObzcOk8E/edit?usp=sharing`;
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
         owner: OWNER,
         repo: REPO,
@@ -71,4 +72,3 @@ async function main() {
 }
 
 main();
-
