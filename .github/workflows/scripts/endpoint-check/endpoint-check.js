@@ -13,8 +13,6 @@ if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     process.exit(1);
 } 
 
-// `${REPO}/internal/recommendations.chat.completions`
-
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
     
@@ -23,7 +21,7 @@ function searchInternalKeyword(changedFiles) {
             const absolutePath = path.resolve(filePath); 
             console.log(`Processing file: ${absolutePath}`);
             const content = fs.readFileSync(absolutePath, 'utf-8'); 
-            const combinedExp = /\/internal\/[^']+'|internal\/[^']+'/g;
+            const combinedExp = /internal\/[^'`]*['`]/g;
             const endpointsFound = content.match(combinedExp);
             if (endpointsFound) {
                 const uniqueEndpoints = Array.from(new Set(endpointsFound));
