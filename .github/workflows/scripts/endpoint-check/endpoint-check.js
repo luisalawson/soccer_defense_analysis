@@ -3,83 +3,70 @@ import fs from 'fs';
 import path from 'path';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO = process.env.GITHUB_REPOSITORY.split('/')[1];
-const OWNER = process.env.GITHUB_REPOSITORY.split('/')[0];
-const PR_NUMBER = process.env.GITHUB_PR_NUMBER;
+const REPO = process.env.GITHUB_REPOSITORY?.split('/')[1];
+const OWNER = process.env.GITHUB_REPOSITORY?.split('/')[0];
+const PR_NUMBER = process.env.PR_NUMBER;
+const FILES = process.env.FILES?.split(',').filter(Boolean); 
 
-async function getChangedFiles() {
-    const filenames = []
-    const octokit = new Octokit({
-        auth: GITHUB_TOKEN
-    })
-    const response = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
-        owner: OWNER,
-        repo: REPO,
-        pull_number: PR_NUMBER,
-        headers: {
-        'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
-    for (const file of response.data) {
-        if(file.status === 'added' || file.status === 'modified'){
-            filenames.push(file.filename);
-        }
-    }
-    return filenames;
-}
+if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
+    console.error("Missing required environment variables.");
+    process.exit(1);
+} 
+//internal/accounts.list?id=18181'
 function searchInternalKeyword(changedFiles) {
-    let internalEndpoints = new Map();
-    function readFiles(directory) {
-        const files = fs.readdirSync(directory);
-        files.forEach(file => {
-            const filePath = path.join(directory, file);
-            const stat = fs.statSync(filePath);
-            if (stat.isDirectory()) { 
-                readFiles(filePath);
-            } else if (file.endsWith('.ts') && changedFiles.includes(file)) {
-                const content = fs.readFileSync(filePath, 'utf-8');
-                // not internal only to avoid matching the internal keyword for timeline entry comments
-                const internalExp = /'\/internal\/[^']+'/g;
-                const endpointsFound = content.match(internalExp);
-                if (endpointsFound) {
-                    if (!internalEndpoints.has(filePath)) {
-                        internalEndpoints.set(filePath, []);
-                    }
-                    endpointsFound.forEach(endpoint => internalEndpoints.get(filePath).push(endpoint));
-                }
+    let internalEndpoints = [];
+    
+    changedFiles.forEach(filePath => {
+        try {
+            const absolutePath = path.resolve(filePath); 
+            console.log(`Processing file: ${absolutePath}`);
+            const content = fs.readFileSync(absolutePath, 'utf-8'); 
+            const combinedExp = /internal\/[^?'`]*[?'`]/g;
+            const endpointsFound = content.match(combinedExp);
+            if (endpointsFound) {
+                const uniqueEndpoints = Array.from(new Set(endpointsFound));
+                internalEndpoints.push([filePath, uniqueEndpoints]);
             }
-        });
-    }
-    readFiles('.');
-    return Array.from(internalEndpoints);
-}
-
-async function postComment(endpoints){
-    let commentBody = `Please explain why you are using the following internal endpoints:\n`;
-    endpoints.forEach(([filePath, endpoint]) => {
-        commentBody += `- ${endpoint} in ${filePath}\n`;
+        } catch (error) {
+            console.error(`Error reading file ${filePath}:`, error);
+        }
     });
-    // https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#create-an-issue-comment 
-    // https://github.com/octokit/core.js#readme
-    const octokit = new Octokit({
-        auth: GITHUB_TOKEN
-    })
+    return internalEndpoints;
+}
+//      `${endpoint}/internal/recommendations.chat.completions`,
+
+async function postComment(endpoints) {
+    const octokit = new Octokit({ auth: GITHUB_TOKEN });
+    let commentBody = `Hey! I noticed you are using the following internal endpoints:\n`;
+    endpoints.forEach(([filePath, endpointList]) => {
+        commentBody += `- ${filePath}:\n`;
+        endpointList.forEach(endpoint => {
+            commentBody += `  - ${endpoint}\n`;
+        });
+    });
+    commentBody += `\nInternal endpoints shouldn't be used, please follow the steps on this document: https://docs.google.com/document/d/1AMwAvWqhR-6HYIF32iB2Ecjv3IfqqoQSXX1ObzcOk8E/edit?usp=sharing`;
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
         owner: OWNER,
         repo: REPO,
         issue_number: PR_NUMBER,
         body: commentBody,
-        headers: {
-        'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
+        headers: { 'X-GitHub-Api-Version': '2022-11-28' }
+    });
 }
 
 async function main() {
-    const changedFiles = await getChangedFiles();
-    const internalEndpoints = searchInternalKeyword(changedFiles);
-    if (internalEndpoints.length > 0) {
-        await postComment(internalEndpoints);
+    try {
+        const internalEndpoints = searchInternalKeyword(FILES);
+        if (internalEndpoints.length > 0) {
+            await postComment(internalEndpoints);
+            process.exit(1);
+        } else {
+            console.log("No internal endpoints found");
+            process.exit(0);
+        }
+    } catch (error) {
+        console.error("Error in script execution:", error);
+        process.exit(1);
     }
 }
 
