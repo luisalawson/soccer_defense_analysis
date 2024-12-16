@@ -12,8 +12,7 @@ if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     console.error("Missing required environment variables.");
     process.exit(1);
 } 
-//      `${endpoint}/internal/recommendations.chat.completions`,
-
+//internal/accounts.list?id=18181'
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
     
@@ -22,7 +21,7 @@ function searchInternalKeyword(changedFiles) {
             const absolutePath = path.resolve(filePath); 
             console.log(`Processing file: ${absolutePath}`);
             const content = fs.readFileSync(absolutePath, 'utf-8'); 
-            const combinedExp = /internal\/[^'`]*['`]/g;
+            const combinedExp = /internal\/[^'`]*['`?]/g;
             const endpointsFound = content.match(combinedExp);
             if (endpointsFound) {
                 const uniqueEndpoints = Array.from(new Set(endpointsFound));
@@ -34,6 +33,7 @@ function searchInternalKeyword(changedFiles) {
     });
     return internalEndpoints;
 }
+//      `${endpoint}/internal/recommendations.chat.completions`,
 
 async function postComment(endpoints) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
