@@ -32,7 +32,7 @@ jobs:
       run: |
         BASE_SHA="${{ github.event.pull_request.base.sha }}"
         HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-        FILES=$(git diff --name-only --diff-filter=AM $(git rev-list --max-parents=0 HEAD) HEAD -- '*.ts' '*.js')
+        FILES=$(git diff --name-only --diff-filter=AM $(git merge-base origin/main HEAD) HEAD -- '*.ts' '*.js')
         if [ -z "$FILES" ]; then
           echo "No changed files detected."
         else
