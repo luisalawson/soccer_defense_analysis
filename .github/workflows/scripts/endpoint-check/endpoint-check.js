@@ -26,7 +26,7 @@ async function getFiles(){
         'X-GitHub-Api-Version': '2022-11-28'
         }
     })
-    return files
+    return files.data.map(file => file.filename);
 }
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
