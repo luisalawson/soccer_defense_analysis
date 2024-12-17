@@ -1,0 +1,1 @@
+//internal/works.get?id=1
