@@ -17,7 +17,6 @@ async function getFiles(){
     const octokit = new Octokit({
         auth: GITHUB_TOKEN
     })
-    
     const files = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
         owner: OWNER,
         repo: REPO,
@@ -47,7 +46,6 @@ function searchInternalKeyword(changedFiles) {
     });
     return internalEndpoints;
 }
-//      `${endpoint}/internal/recommendations.chat.completions`,
 
 async function postComment(endpoints) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
