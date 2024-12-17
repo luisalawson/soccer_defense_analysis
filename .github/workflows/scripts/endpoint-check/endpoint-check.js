@@ -6,7 +6,6 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY?.split('/')[1];
 const OWNER = process.env.GITHUB_REPOSITORY?.split('/')[0];
 const PR_NUMBER = process.env.PR_NUMBER;
-const FILES = process.env.FILES?.split(',').filter(Boolean); 
 
 if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     console.error("Missing required environment variables.");

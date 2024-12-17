@@ -26,28 +26,11 @@ jobs:
       run: |
         cd ${{ env.DIR }}/endpoint-check
         npm install
- 
-    - id: changed
-      name: Check changed files
-      run: |
-        BASE_SHA="${{ github.event.pull_request.base.sha }}"
-        HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-        FILES=$(git diff --name-only --diff-filter=AM $(git merge-base origin/main HEAD) HEAD -- '*.ts' '*.js')
-        if [ -z "$FILES" ]; then
-          echo "No changed files detected."
-        else
-          echo "Changed files: $FILES"
-          # Replace newlines with commas for GitHub Actions compatibility
-          FILES=$(echo "$FILES" | tr '\n' ',')
-          echo "files=$FILES" >> $GITHUB_OUTPUT
-        fi
-
 
     - name: Run internal keyword check
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
-        FILES: ${{ steps.changed.outputs.files }} 
       run: |
         node ${{ env.DIR }}/endpoint-check/endpoint-check.js
