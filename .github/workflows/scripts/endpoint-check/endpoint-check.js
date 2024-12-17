@@ -12,10 +12,23 @@ if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     console.error("Missing required environment variables.");
     process.exit(1);
 } 
-//internal/accounts.list?id=18181'
+
+async function getFiles(){
+    const octokit = new Octokit({
+        auth: GITHUB_TOKEN
+    })
+    
+    await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+        owner: OWNER,
+        repo: REPO,
+        pull_number: PR_NUMBER,
+        headers: {
+        'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+}
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
-    
     changedFiles.forEach(filePath => {
         try {
             const absolutePath = path.resolve(filePath); 
@@ -56,7 +69,9 @@ async function postComment(endpoints) {
 
 async function main() {
     try {
-        const internalEndpoints = searchInternalKeyword(FILES);
+        const files = await getFiles();
+        console.log("Files:", files);
+        const internalEndpoints = searchInternalKeyword(files);
         if (internalEndpoints.length > 0) {
             await postComment(internalEndpoints);
             process.exit(1);
