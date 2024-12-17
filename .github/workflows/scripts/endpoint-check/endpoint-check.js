@@ -18,7 +18,7 @@ async function getFiles(){
         auth: GITHUB_TOKEN
     })
     
-    await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+    const files = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
         owner: OWNER,
         repo: REPO,
         pull_number: PR_NUMBER,
@@ -26,6 +26,7 @@ async function getFiles(){
         'X-GitHub-Api-Version': '2022-11-28'
         }
     })
+    return files
 }
 function searchInternalKeyword(changedFiles) {
     let internalEndpoints = [];
