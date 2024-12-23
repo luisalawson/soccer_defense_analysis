@@ -56,14 +56,11 @@ function searchTokens(changedFiles) {
 }
 
 // Posting the comment in the PR
-async function postComment(endpoints) {
+async function postComment(files) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
     let commentBody = `Hey! There are potential tokens on the following files:\n`;
-    endpoints.forEach(([filePath, endpointList]) => {
-        commentBody += `- ${filePath}:\n`;
-        endpointList.forEach(endpoint => {
-            commentBody += `  - ${endpoint}\n`;
-        });
+    files.forEach((filepath) => {
+        commentBody += `- ${filepath}\n`;
     });
     commentBody += `\nPlease make sure no hardcoded tokens are present in the snap-in.`;
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
