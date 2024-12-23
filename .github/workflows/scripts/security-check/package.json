@@ -1,0 +1,9 @@
+{
+  "name": "security-check",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "security-check.js",
+  "dependencies": {
+    "octokit": "^4.0.2"
+  }
+}

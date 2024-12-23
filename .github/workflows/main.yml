@@ -12,25 +12,53 @@ jobs:
     if: always()
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    - name: Install endpoint dependencies
-      run: |
-        cd ${{ env.DIR }}/endpoint-check
-        npm install
+      - name: Install endpoint dependencies
+        run: |
+          cd ${{ env.DIR }}/endpoint-check
+          npm install
 
-    - name: Run internal keyword check
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
-      run: |
-        node ${{ env.DIR }}/endpoint-check/endpoint-check.js
+      - name: Run internal keyword check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node ${{ env.DIR }}/endpoint-check/endpoint-check.js
+
+  check-hardcoded-tokens:
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: |
+          cd ${{ env.DIR }}/security check
+          npm install
+
+      - name: Run security check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node ${{ env.DIR }}/security-check/security-check.js

@@ -1,3 +1,4 @@
+// code that scans files and directories for hardcoded api keys
 import { Octokit } from "@octokit/core";
 import fs from 'fs';
 import path from 'path';
@@ -26,38 +27,45 @@ async function getFiles(){
     })
     return files.data.map(file => file.filename);
 }
-// Analizing files for internal word
-function searchInternalKeyword(changedFiles) {
-    let internalEndpoints = [];
+// Checks for tokens
+function searchTokens(changedFiles) {
+    let dangerFiles = [];
+    const regexList = [
+        // https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+        // jwt token - start with ey 
+        /\b(ey[a-zA-Z0-9]{17,}\.ey[a-zA-Z0-9\/\\_-]{17,}\.(?:[a-zA-Z0-9\/\\_-]{10,}={0,2})?)(?:['|\"|\n|\r|\s|\x60|;]|$)/g,
+        // jwt base64 token
+        /\bZXlK(?:(aGJHY2lPaU)|(aGNIVWlPaU)|(aGNIWWlPaU)|(aGRXUWlPaU)|(aU5qUWlP)|(amNtbDBJanBi)|(amRIa2lPaU)|(bGNHc2lPbn)|(bGJtTWlPaU)|(cWEzVWlPaU)|(cWQyc2lPb)|(cGMzTWlPaU)|(cGRpSTZJ)|(cmFXUWlP)|(clpYbGZiM0J6SWpwY)|(cmRIa2lPaUp)|(dWIyNWpaU0k2)|(d01tTWlP)|(d01uTWlPaU)|(d2NIUWlPaU)|(emRXSWlPaU)|(emRuUWlP)|(MFlXY2lPaU)|(MGVYQWlPaUp)|(MWNtd2l)|(MWMyVWlPaUp)|(MlpYSWlPaU)|(MlpYSnphVzl1SWpv)|(NElqb2)|(NE5XTWlP)|(NE5YUWlPaU)|(NE5YUWpVekkxTmlJNkl)|(NE5YVWlPaU)|(NmFYQWlPaU))[a-zA-Z0-9\/\\_+\-\r\n]{40,}={0,2}/g
+    ];
+
     changedFiles.forEach(filePath => {
         try {
-            const absolutePath = path.resolve(filePath); 
-            console.log(`Processing file: ${absolutePath}`);
-            const content = fs.readFileSync(absolutePath, 'utf-8'); 
-            const combinedExp = /internal\/[^?'`"]*[?'`"]/g;
-            const endpointsFound = content.match(combinedExp);
-            if (endpointsFound) {
-                const uniqueEndpoints = Array.from(new Set(endpointsFound));
-                internalEndpoints.push([filePath, uniqueEndpoints]);
-            }
+            const absolutePath = path.resolve(filePath);
+            const content = fs.readFileSync(absolutePath, 'utf-8');
+            regexList.forEach(regex => {
+                const matches = content.match(regex);
+                if (matches) {
+                    dangerFiles.push(filePath);
+                }
+            });
         } catch (error) {
             console.error(`Error reading file ${filePath}:`, error);
         }
     });
-    return internalEndpoints;
+    return dangerFiles;
 }
 
 // Posting the comment in the PR
 async function postComment(endpoints) {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
-    let commentBody = `Hey! I noticed you are using the following internal endpoints:\n`;
+    let commentBody = `Hey! There are potential tokens on the following files:\n`;
     endpoints.forEach(([filePath, endpointList]) => {
         commentBody += `- ${filePath}:\n`;
         endpointList.forEach(endpoint => {
             commentBody += `  - ${endpoint}\n`;
         });
     });
-    commentBody += `\nInternal endpoints shouldn't be used, please follow the steps on this document: https://docs.google.com/document/d/1AMwAvWqhR-6HYIF32iB2Ecjv3IfqqoQSXX1ObzcOk8E/edit?usp=sharing`;
+    commentBody += `\nPlease make sure no hardcoded tokens are present in the snap-in.`;
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
         owner: OWNER,
         repo: REPO,
@@ -71,13 +79,11 @@ async function postComment(endpoints) {
 async function main() {
     try {
         const files = await getFiles();
-        console.log("Changed files in PR:", files);
-        const internalEndpoints = searchInternalKeyword(files);
-        if (internalEndpoints.length > 0) {
-            await postComment(internalEndpoints);
+        const conflictFiles = searchTokens(files);
+        if (conflictFiles.length > 0) {
+            await postComment(conflictFiles);
             process.exit(1);
         } else {
-            console.log("No internal endpoints found");
             process.exit(0);
         }
     } catch (error) {
@@ -85,4 +91,6 @@ async function main() {
         process.exit(1);
     }
 }
+
 main();
+
