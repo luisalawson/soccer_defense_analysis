@@ -52,7 +52,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd ${{ env.DIR }}/security check
+        cd ${{ env.DIR }}/security-check 
         npm install
 
     - name: Run security check
