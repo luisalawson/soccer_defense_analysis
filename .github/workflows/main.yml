@@ -7,37 +7,9 @@ env:
   DIR: .github/workflows/scripts
 
 jobs:
-  check-internal-keyword:
+  check-internal-keyword-tokens:
     runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install endpoint dependencies
-      run: |
-        cd ${{ env.DIR }}/endpoint-check
-        npm install
-
-    - name: Run internal keyword check
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
-      run: |
-        node ${{ env.DIR }}/endpoint-check/endpoint-check.js
-
-  check-hardcoded-tokens:
-    runs-on: ubuntu-latest
-    if: always()
+    if: always() # need to run even if the previous job fails
 
     steps:
     - name: Checkout code
@@ -52,13 +24,13 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd ${{ env.DIR }}/security-check 
+        cd ${{ env.DIR }}/endpoint-tokens-check
         npm install
 
-    - name: Run security check
+    - name: Run check
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        node ${{ env.DIR }}/security-check/security-check.js
+        node ${{ env.DIR }}/endpoint-tokens-check/endpoint-tokens-check.js
