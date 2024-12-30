@@ -108,7 +108,7 @@ async function postCommentTokens(files) {
     commentBody += `\nPlease make sure no hardcoded tokens are present in the snap-in.`;
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
         owner: OWNER,
-        repo: REPO,
+        repo: REPO, 
         issue_number: PR_NUMBER,
         body: commentBody,
         headers: { 'X-GitHub-Api-Version': '2022-11-28' }
