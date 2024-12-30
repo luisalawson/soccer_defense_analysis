@@ -30,7 +30,7 @@ async function getFiles(){
 function searchInternalKeyword(changedFiles) {
     // we only care for ts or js files here
     console.log(`Changed files: ${changedFiles}`);
-    relevantFiles = changedFiles.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+    const relevantFiles = changedFiles.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
     let internalEndpoints = [];
     if (relevantFiles.length === 0) {
         return internalEndpoints;
