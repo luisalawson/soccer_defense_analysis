@@ -123,7 +123,7 @@ async function main() {
         const conflictFiles = searchTokens(files);
         if (internalEndpoints.length > 0 && conflictFiles.length > 0) {
             await postCommentInternal(internalEndpoints);
-            await postCommentTokens(internalEndpoints);
+            await postCommentTokens(conflictFiles);
             process.exit(1);
         } else if(internalEndpoints.length > 0 && conflictFiles.length == 0) {
             await postCommentInternal(internalEndpoints);
