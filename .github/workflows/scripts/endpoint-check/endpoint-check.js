@@ -6,7 +6,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY?.split('/')[1];
 const OWNER = process.env.GITHUB_REPOSITORY?.split('/')[0];
 const PR_NUMBER = process.env.PR_NUMBER;
-
+// internal/works.get'
 if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     console.error("Missing required environment variables.");
     process.exit(1);
@@ -29,7 +29,6 @@ async function getFiles(){
 // Analizing files for internal word
 function searchInternalKeyword(changedFiles) {
     // we only care for ts or js files here
-    console.log(`Changed files: ${changedFiles}`);
     const relevantFiles = changedFiles.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
     let internalEndpoints = [];
     if (relevantFiles.length === 0) {
@@ -38,7 +37,6 @@ function searchInternalKeyword(changedFiles) {
     relevantFiles.forEach(filePath => {
         try {
             const absolutePath = path.resolve(filePath); 
-            console.log(`Processing file: ${absolutePath}`);
             const content = fs.readFileSync(absolutePath, 'utf-8'); 
             const combinedExp = /internal\/[^?'`"]*[?'`"]/g;
             const endpointsFound = content.match(combinedExp);
@@ -121,10 +119,8 @@ async function postCommentTokens(files) {
 async function main() {
     try {
         const files = await getFiles();
-
         const internalEndpoints = searchInternalKeyword(files);
         const conflictFiles = searchTokens(files);
-
         if (internalEndpoints.length > 0 && conflictFiles.length > 0) {
             await postCommentInternal(internalEndpoints);
             await postCommentTokens(internalEndpoints);
