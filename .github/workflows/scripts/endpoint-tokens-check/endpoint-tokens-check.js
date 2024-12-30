@@ -24,7 +24,8 @@ async function getFiles(){
         'X-GitHub-Api-Version': '2022-11-28'
         }
     })
-    return files.data.map(file => file.filename);
+    // is file.status = "removed", i don't want it
+    return files.data.filter(file => file.status !== "removed").map(file => file.filename);
 }
 // Analizing files for internal word
 function searchInternalKeyword(changedFiles) {
