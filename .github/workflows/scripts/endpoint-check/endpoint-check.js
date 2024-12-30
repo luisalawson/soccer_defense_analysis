@@ -29,6 +29,7 @@ async function getFiles(){
 // Analizing files for internal word
 function searchInternalKeyword(changedFiles) {
     // we only care for ts or js files here
+    console.log(`Changed files: ${changedFiles}`);
     relevantFiles = changedFiles.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
     let internalEndpoints = [];
     relevantFiles.forEach(filePath => {
@@ -117,7 +118,7 @@ async function postCommentTokens(files) {
 async function main() {
     try {
         const files = await getFiles();
-        
+
         const internalEndpoints = searchInternalKeyword(files);
         const conflictFiles = searchTokens(files);
 
