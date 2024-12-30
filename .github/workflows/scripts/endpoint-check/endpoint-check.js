@@ -32,6 +32,9 @@ function searchInternalKeyword(changedFiles) {
     console.log(`Changed files: ${changedFiles}`);
     relevantFiles = changedFiles.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
     let internalEndpoints = [];
+    if (relevantFiles.length === 0) {
+        return internalEndpoints;
+    }
     relevantFiles.forEach(filePath => {
         try {
             const absolutePath = path.resolve(filePath); 
