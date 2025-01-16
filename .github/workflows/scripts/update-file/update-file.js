@@ -1,5 +1,4 @@
 import { Octokit } from "@octokit/core";
-import fs from 'fs';
 
 // Environment variables
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
@@ -7,22 +6,31 @@ const GITHUB_REPOSITORY = process.env.GITHUB_REPOSITORY;
 const PR_OWNER = process.env.PR_OWNER;
 const PR_NUMBER = process.env.PR_NUMBER;
 
-// Split owner and repo from the GITHUB_REPOSITORY env variable
 const [owner, repo] = GITHUB_REPOSITORY.split("/");
 
 // Initialize Octokit
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 // File to update
-const filePath = ".github/workflows/scripts/CODEOWNERS"; // Adjusted path
-const commitMessage = `Update CODEOWNERS with details from PR #${PR_NUMBER}`;
+const filePath = ".github/workflows/CODEOWNERS";
+const commitMessage = `Update CODEOWNERS with folder details from PR #${PR_NUMBER}`;
 
-// Main function
 async function updateFile() {
   try {
-    // Fetch the current file content (if it exists)
+    // Get the files changed in the PR
+    const changedFiles = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+      owner,
+      repo,
+      pull_number: PR_NUMBER,
+    });
+
+    // Extract the folder name from the first changed file
+    const folderName = changedFiles.data[0].filename.split("/")[0];
+    console.log(`Folder added: ${folderName}`);
+
+    // Fetch the current CODEOWNERS file
+    let existingContent = "";
     let sha;
-    let fileContent = `PR Merged by: ${PR_OWNER}\n`;
 
     try {
       const { data } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
@@ -30,19 +38,21 @@ async function updateFile() {
         repo,
         path: filePath,
       });
+      existingContent = Buffer.from(data.content, "base64").toString("utf-8");
       sha = data.sha;
-      fileContent = Buffer.from(data.content, "base64").toString("utf-8") + fileContent;
     } catch (error) {
-      if (error.status !== 404) throw error; // Ignore if file doesn't exist
+      if (error.status !== 404) throw error; // Handle non-404 errors
+      console.log("CODEOWNERS file does not exist. Creating a new one.");
     }
 
-    // Append new details to the file content
-    fileContent += `Details from PR #${PR_NUMBER}\n`;
+    // Add the new entry to the CODEOWNERS file
+    const newEntry = `/${folderName} @${PR_OWNER}`;
+    const updatedContent = `${existingContent}\n${newEntry}`.trim();
 
-    // Encode the content in Base64
-    const encodedContent = Buffer.from(fileContent).toString("base64");
+    // Encode the updated content in Base64
+    const encodedContent = Buffer.from(updatedContent).toString("base64");
 
-    // Update or create the file
+    // Update or create the CODEOWNERS file
     await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
       owner,
       repo,
@@ -56,9 +66,9 @@ async function updateFile() {
       sha, // Include `sha` only if updating an existing file
     });
 
-    console.log("File updated successfully.");
+    console.log("CODEOWNERS file updated successfully.");
   } catch (error) {
-    console.error("Failed to update the file:", error.message);
+    console.error("Failed to update the CODEOWNERS file:", error.message);
     console.error("Stack trace:", error.stack);
     process.exit(1);
   }
@@ -66,3 +76,4 @@ async function updateFile() {
 
 // Run the function
 updateFile();
+
