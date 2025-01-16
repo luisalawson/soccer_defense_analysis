@@ -34,3 +34,44 @@ jobs:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
         node ${{ env.DIR }}/endpoint-tokens-check/endpoint-tokens-check.js
+        name: Update File on PR Merge
+
+on:
+  pull_request:
+    types: 
+      - closed
+
+env:
+  DIR: .github/workflows/scripts
+
+jobs:
+  update-file-on-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true 
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: |
+        cd ${{ env.DIR }}
+        npm install
+
+    - name: Update File with PR Details
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        PR_OWNER: ${{ github.event.pull_request.user.login }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        node ${{ env.DIR }}/update-file/update-file.js
+
+
