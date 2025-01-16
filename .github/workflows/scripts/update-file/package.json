@@ -1,0 +1,9 @@
+{
+    "name": "update-file",
+    "version": "1.0.0",
+    "main": "update-file.js",
+    "type": "module",
+    "dependencies": {
+        "octokit": "^4.0.2"
+    }
+}

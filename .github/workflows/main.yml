@@ -7,9 +7,9 @@ env:
   DIR: .github/workflows/scripts
 
 jobs:
-  check-internal-keyword:
+  check-internal-keyword-tokens:
     runs-on: ubuntu-latest
-    if: always()
+    if: always() # need to run even if the previous job fails
 
     steps:
     - name: Checkout code
@@ -22,33 +22,56 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install endpoint dependencies
+    - name: Install dependencies
       run: |
-        cd ${{ env.DIR }}/endpoint-check
+        cd ${{ env.DIR }}/endpoint-tokens-check
         npm install
- 
-    - id: changed
-      name: Check changed files
-      run: |
-        BASE_SHA="${{ github.event.pull_request.base.sha }}"
-        HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-        FILES=$(git diff --name-only --diff-filter=ACM "$BASE_SHA" "$HEAD_SHA" -- '*.ts' '*.js')
-        if [ -z "$FILES" ]; then
-          echo "No changed files detected."
-          echo "files=" >> $GITHUB_OUTPUT
-        else
-          echo "Changed files: $FILES"
-          # Replace newlines with commas for GitHub Actions compatibility
-          FILES=$(echo "$FILES" | tr '\n' ',')
-          echo "files=$FILES" >> $GITHUB_OUTPUT
-        fi
 
-
-    - name: Run internal keyword check
+    - name: Run check
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
-        FILES: ${{ steps.changed.outputs.files }} 
       run: |
-        node ${{ env.DIR }}/endpoint-check/endpoint-check.js
+        node ${{ env.DIR }}/endpoint-tokens-check/endpoint-tokens-check.js
+        name: Update File on PR Merge
+
+on:
+  pull_request:
+    types: 
+      - closed
+
+env:
+  DIR: .github/workflows/scripts
+
+jobs:
+  update-file-on-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true 
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: |
+        cd ${{ env.DIR }}
+        npm install
+
+    - name: Update File with PR Details
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        PR_OWNER: ${{ github.event.pull_request.user.login }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        node ${{ env.DIR }}/update-file/update-file.js
+
+

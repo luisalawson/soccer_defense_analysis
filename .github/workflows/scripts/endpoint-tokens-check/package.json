@@ -1,7 +1,7 @@
 {
-    "name": "endpoint-check",
+    "name": "endpoint-tokens-check",
     "version": "1.0.0",
-    "main": "endpoint-check.js",
+    "main": "endpoint-tokens-check.js",
     "type": "module",
     "dependencies": {
         "octokit": "^4.0.2"
