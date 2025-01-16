@@ -12,7 +12,7 @@ const [owner, repo] = GITHUB_REPOSITORY.split("/");
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 // File to update
-const filePath = ".github/workflows/CODEOWNERS";
+const filePath = "CODEOWNERS";
 const commitMessage = `Update CODEOWNERS with folder details from PR #${PR_NUMBER}`;
 
 async function updateFile() {
