@@ -57,7 +57,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ${{ env.DIR }}
+          cd ${{ env.DIR }}/update-file
           npm install
 
       - name: Update File with PR Details
