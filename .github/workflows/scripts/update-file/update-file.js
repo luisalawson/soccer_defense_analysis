@@ -1,6 +1,5 @@
 import { Octokit } from "@octokit/core";
 import fs from 'fs';
-import path from 'path';
 
 // Environment variables
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
@@ -15,8 +14,8 @@ const [owner, repo] = GITHUB_REPOSITORY.split("/");
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 // File to update
-const filePath = "CODEOWNERS.txt";
-const commitMessage = `Update file with details from PR #${PR_NUMBER}`;
+const filePath = ".github/workflows/scripts/CODEOWNERS"; // Adjusted path
+const commitMessage = `Update CODEOWNERS with details from PR #${PR_NUMBER}`;
 
 // Main function
 async function updateFile() {
@@ -59,7 +58,8 @@ async function updateFile() {
 
     console.log("File updated successfully.");
   } catch (error) {
-    console.error("Failed to update the file:", error);
+    console.error("Failed to update the file:", error.message);
+    console.error("Stack trace:", error.stack);
     process.exit(1);
   }
 }
