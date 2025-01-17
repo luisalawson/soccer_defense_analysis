@@ -63,7 +63,7 @@ async function updateFile() {
     }
 
     // Add the new entry to the CODEOWNERS file
-    const newEntry = `/${folderName}/ @${PR_OWNER} @devrev/aai-reviewers`;
+    const newEntry = `/${folderName}/ @${PR_OWNER}`;
     const updatedContent = `${existingContent}\n${newEntry}`.trim();
 
     // Encode the updated content in Base64 -- required for the Github API
