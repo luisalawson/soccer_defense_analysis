@@ -24,15 +24,20 @@ async function updateFile() {
       pull_number: PR_NUMBER,
     });
 
-    // Extract the folder name from the first changed file 
-    const folderName = changedFiles.data[0].filename.split("/")[0];
+    // Extract the folder name from all the files changed
+    const folderNames = changedFiles.data.map((file) => file.filename.split("/")[0]);
+    // Get the unique folder name
+    const uniqueFolderName = [...new Set(folderNames)][0];
 
     // If more than 2 folders were changed, we return assuming the pr was to update general items for existing snap-ins
-    if (changedFiles.data.length > 2) {
+    if (uniqueFolderName.size > 2) {
       console.log("More than 2 folders were changed. Skipping CODEOWNERS update.");
       return;
     }
-    console.log(`Folder added: ${folderName}`);
+
+    const uniqueFolder = uniqueFolderName.values().next().value;
+    
+    console.log(`Folder added: ${uniqueFolder}`);
 
     // Fetch the current CODEOWNERS file -- we'll be modifying these variables
     let existingContent = "";
@@ -55,15 +60,15 @@ async function updateFile() {
     }
 
     // check if the folder added is already present in the CODEOWNERS file 
-    const folderPresent = existingContent.includes(`/${folderName}`);
+    const folderPresent = existingContent.includes(`/${uniqueFolder}`);
     if (folderPresent) {
-      console.log(`Snap-in ${folderName} already exists in CODEOWNERS file.`);
+      console.log(`Snap-in ${uniqueFolder} already exists in CODEOWNERS file.`);
       // Assuming the owner should be one, if the folder exists, we won't update the CODEOWNERS file
       process.exit(0);
     }
 
     // Add the new entry to the CODEOWNERS file
-    const newEntry = `/${folderName}/ @${PR_OWNER}`;
+    const newEntry = `/${uniqueFolder}/ @${PR_OWNER}`;
     const updatedContent = `${existingContent}\n${newEntry}`.trim();
 
     // Encode the updated content in Base64 -- required for the Github API
