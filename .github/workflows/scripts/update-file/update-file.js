@@ -1,6 +1,5 @@
 import { Octokit } from "@octokit/core";
 
-// Environment variables
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPOSITORY = process.env.GITHUB_REPOSITORY;
 const PR_OWNER = process.env.PR_OWNER;
@@ -8,12 +7,13 @@ const PR_NUMBER = process.env.PR_NUMBER;
 
 const [owner, repo] = GITHUB_REPOSITORY.split("/");
 
-// Initialize Octokit since we'll be using Gitbub API
+// Initialize Octokit since we'll be using GitHub API
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 // File to update
-const filePath = "CODEOWNERS";
+const filePath = ".github/CODEOWNERS";
 const commitMessage = `Update CODEOWNERS with folder details from PR #${PR_NUMBER}`;
+const branchName = `update-codeowners-${PR_NUMBER}`;
 
 async function updateFile() {
   try {
@@ -26,16 +26,16 @@ async function updateFile() {
 
     // Extract the folder name from all the files changed
     const folderNames = changedFiles.data.map((file) => file.filename.split("/")[0]);
-    // Get the unique folder name
-    const uniqueFolderName = [...new Set(folderNames)];
+    // Get the unique folder names
+    const uniqueFolderNames = [...new Set(folderNames)];
 
     // If more than 2 folders were changed, we return assuming the pr was to update general items for existing snap-ins
-    if (uniqueFolderName.size > 2) {
+    if (uniqueFolderNames.length > 2) {
       console.log("More than 2 folders were changed. Skipping CODEOWNERS update.");
       return;
     }
 
-    const uniqueFolder = uniqueFolderName.values().next().value;
+    const uniqueFolder = uniqueFolderNames[0];
     
     console.log(`Folder added: ${uniqueFolder}`);
 
@@ -74,23 +74,39 @@ async function updateFile() {
     // Encode the updated content in Base64 -- required for the Github API
     const encodedContent = Buffer.from(updatedContent).toString("base64");
 
-    // Update or create the CODEOWNERS file - https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#create-or-update-file-contents 
+    // Create a new branch
+    await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
+      owner,
+      repo,
+      ref: `refs/heads/${branchName}`,
+      sha: (await octokit.request("GET /repos/{owner}/{repo}/git/refs/heads/main", { owner, repo })).data.object.sha,
+    });
+
+    // Update the CODEOWNERS file on the new branch
     await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
       owner,
       repo,
       path: filePath,
       message: commitMessage,
-      committer: {
-        name: "GitHub Actions",
-        email: "actions@github.com",
-      },
       content: encodedContent,
+      branch: branchName,
       sha, // Include sha since we are updating an existing file
     });
-    console.log("CODEOWNERS file updated successfully.");
+
+    // Create a pull request
+    await octokit.request("POST /repos/{owner}/{repo}/pulls", {
+      owner,
+      repo,
+      title: commitMessage,
+      head: branchName,
+      base: "main",
+      body: `This PR updates the CODEOWNERS file with the folder details from PR #${PR_NUMBER}.`,
+    });
+
+    console.log("Pull request created successfully.");
     process.exit(0);
   } catch (error) {
-    console.error("Failed to update the CODEOWNERS file:", error.message);
+    console.error("Failed to update the CODEOWNERS file and create a pull request:", error.message);
     process.exit(1);
   }
 }
