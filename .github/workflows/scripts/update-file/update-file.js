@@ -27,7 +27,7 @@ async function updateFile() {
     // Extract the folder name from all the files changed
     const folderNames = changedFiles.data.map((file) => file.filename.split("/")[0]);
     // Get the unique folder name
-    const uniqueFolderName = [...new Set(folderNames)][0];
+    const uniqueFolderName = [...new Set(folderNames)];
 
     // If more than 2 folders were changed, we return assuming the pr was to update general items for existing snap-ins
     if (uniqueFolderName.size > 2) {
