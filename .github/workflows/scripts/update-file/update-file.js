@@ -46,7 +46,7 @@ async function updateFile() {
         // The path to the file since we don't want all the files in the repository
         path: filePath,
       });
-      // Decode the content from Base64 (github actions) to UTF-8 
+      // Decode the content from Base64 (gh actions) to UTF-8 
       existingContent = Buffer.from(data.content, "base64").toString("utf-8");
       sha = data.sha;
     } catch (error) {
@@ -80,7 +80,7 @@ async function updateFile() {
         email: "actions@github.com",
       },
       content: encodedContent,
-      sha, // Include `sha` since we are updating an existing file
+      sha, // Include sha since we are updating an existing file
     });
     console.log("CODEOWNERS file updated successfully.");
     process.exit(0);
