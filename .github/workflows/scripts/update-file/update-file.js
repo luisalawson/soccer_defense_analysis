@@ -61,8 +61,9 @@ async function updateFile() {
 
     // check if the folder added is already present in the CODEOWNERS file 
     const folderPresent = existingContent.includes(`/${uniqueFolder}`);
-    if (folderPresent) {
-      console.log(`Snap-in ${uniqueFolder} already exists in CODEOWNERS file.`);
+    const skipFolder = (uniqueFolder === ".github");
+    if (folderPresent || skipFolder) {
+      console.log(`Snap-in ${uniqueFolder} already exists in CODEOWNERS file or is .github folder.`);
       // Assuming the owner should be one, if the folder exists, we won't update the CODEOWNERS file
       process.exit(0);
     }
@@ -75,15 +76,18 @@ async function updateFile() {
     const encodedContent = Buffer.from(updatedContent).toString("base64");
 
     // Create a new branch
-    await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
+    const branchCreate = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
       owner,
       repo,
       ref: `refs/heads/${branchName}`,
       sha: (await octokit.request("GET /repos/{owner}/{repo}/git/refs/heads/main", { owner, repo })).data.object.sha,
     });
-
+    if (branchCreate.status !== 201) {
+      console.log(`Failed to create a new branch: ${branchCreate.status}`);
+      process.exit(1);
+    }
     // Update the CODEOWNERS file on the new branch
-    await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
+    const updateCodeowners = await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
       owner,
       repo,
       path: filePath,
@@ -92,9 +96,13 @@ async function updateFile() {
       branch: branchName,
       sha, // Include sha since we are updating an existing file
     });
+    if (updateCodeowners.status !== 200) {
+      console.log(`Failed to update the CODEOWNERS file: ${updateCodeowners.status}`);
+      process.exit(1);
+    }
 
     // Create a pull request
-    await octokit.request("POST /repos/{owner}/{repo}/pulls", {
+    const createPullRequest = await octokit.request("POST /repos/{owner}/{repo}/pulls", {
       owner,
       repo,
       title: commitMessage,
@@ -102,6 +110,11 @@ async function updateFile() {
       base: "main",
       body: `This PR updates the CODEOWNERS file with the folder details from PR #${PR_NUMBER}.`,
     });
+
+    if (createPullRequest.status !== 201) {
+      console.log(`Failed to create a pull request: ${createPullRequest.status}`);
+      process.exit(1);
+    }
 
     console.log("Pull request created successfully.");
     process.exit(0);
