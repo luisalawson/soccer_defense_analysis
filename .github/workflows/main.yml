@@ -2,11 +2,6 @@ name: test-code-check
 
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - closed
 
 env:
   DIR: .github/workflows/scripts
@@ -39,6 +34,34 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           node ${{ env.DIR }}/endpoint-tokens-check/endpoint-tokens-check.js
+
+  update-codeowners-check:
+    runs-on: ubuntu-latest
+    if: always() # need to run even if the previous job fails
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: |
+          cd ${{ env.DIR }}/codeowners-check
+          npm install
+
+      - name: Run check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node ${{ env.DIR }}/codeowners-check/codeowners-check.js
 
   update-file-on-merge:
     runs-on: ubuntu-latest
