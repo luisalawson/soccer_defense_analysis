@@ -30,8 +30,8 @@ async function getFiles(){
 async function postComment() {
     const octokit = new Octokit({ auth: GITHUB_TOKEN });
     let commentBody = `Please update the CODEOWNERS file with the following line:\n `;
-    commentBody += `* /YOUR-SNAP-IN-NAME/ @${OWNER}\n`;
-    commentBody += `If you are a member of applied ai, add, next to your username the following: @devrev-ai-reviewers`;
+    commentBody += `* /snap-in-name/  @${OWNER}  @devrev-ai-reviewers \n\n`;
+    commentBody += `ONLY ADD **@devrev-ai-reviewers** IF YOU ARE A MEMBER OF AAI`;
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
         owner: OWNER,
         repo: REPO, 
