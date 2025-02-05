@@ -51,7 +51,7 @@ async function main() {
             process.exit(0);
         }
         const codeowners = files.find(file => file === '.github/CODEOWNERS');
-        const folders = files.data.map((file) => file.filename.split("/")[0]);
+        const folders = files.map((file) => file.split("/")[0]);
         const folderNames = [...new Set(folders)];
         let snapInName = '';
         if (folderNames.length > 1) {
