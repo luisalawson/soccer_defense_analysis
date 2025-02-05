@@ -50,7 +50,7 @@ async function main() {
             console.log("Less than 20 files were changed. Assuming no new snap-in created. Skipping CODEOWNERS check.");
             process.exit(0);
         }
-        const codeowners = files.find(file => file === 'CODEOWNERS');
+        const codeowners = files.find(file => file === '.github/CODEOWNERS');
         const snapInName = files.find(file => file.includes('snap-ins'));
         if (!codeowners) {
             await postComment(snapInName);
