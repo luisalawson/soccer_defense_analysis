@@ -45,9 +45,9 @@ async function postComment() {
 async function main() {
     try {
         const files = await getFiles();
-        // if there are more than 10 files changed, we assume the PR is for a snap-in
-        if (files.length < 10) {
-            console.log("Less than 10 files were changed. Skipping CODEOWNERS check.");
+        // if there are more than 20 files changed, we assume the PR is for a snap-in
+        if (files.length < 1) {
+            console.log("Less than 20 files were changed. Assuming no new snap-in created. Skipping CODEOWNERS check.");
             process.exit(0);
         }
         const codeowners = files.find(file => file === 'CODEOWNERS');
