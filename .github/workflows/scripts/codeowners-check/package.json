@@ -1,0 +1,9 @@
+{
+    "name": "codeowners-check",
+    "version": "1.0.0",
+    "main": "codeowners-check.js",
+    "type": "module",
+    "dependencies": {
+        "octokit": "^4.0.2"
+    }
+}

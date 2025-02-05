@@ -48,6 +48,16 @@ function searchInternalKeyword(changedFiles) {
             console.error(`Error reading file ${filePath}:`, error);
         }
     });
+    // Since this endpoint is used only for testing, we are removing it from the list
+    internalEndpoints = internalEndpoints.filter(([filePath, endpointList]) => {
+        return endpointList.length > 1 || endpointList[0] !== "internal/snap-ins.system-update'";
+    });
+
+    // if the filepath now has no endpointList, we remove it from the list
+    internalEndpoints = internalEndpoints.filter(([filePath, endpointList]) => {
+        return endpointList.length > 0;
+    });
+    
     return internalEndpoints;
 }
 

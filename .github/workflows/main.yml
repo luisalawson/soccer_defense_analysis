@@ -2,11 +2,6 @@ name: test-code-check
 
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - closed
 
 env:
   DIR: .github/workflows/scripts
@@ -40,9 +35,9 @@ jobs:
         run: |
           node ${{ env.DIR }}/endpoint-tokens-check/endpoint-tokens-check.js
 
-  update-file-on-merge:
+  update-codeowners-check:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.merged == true }} # https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#running-your-pull_request-workflow-when-a-pull-request-merges
+    if: always() # need to run even if the previous job fails
 
     steps:
       - name: Checkout code
@@ -57,14 +52,42 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ${{ env.DIR }}/update-file
+          cd ${{ env.DIR }}/codeowners-check
           npm install
 
-      - name: Update File with PR Details
+      - name: Run check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_OWNER: ${{ github.event.pull_request.user.login }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          node ${{ env.DIR }}/update-file/update-file.js
+          node ${{ env.DIR }}/codeowners-check/codeowners-check.js
+
+  # update-file-on-merge:
+  #   runs-on: ubuntu-latest
+  #   if: ${{ github.event.pull_request.merged == true }} # https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#running-your-pull_request-workflow-when-a-pull-request-merges
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+
+  #     - name: Install dependencies
+  #       run: |
+  #         cd ${{ env.DIR }}/update-file
+  #         npm install
+
+  #     - name: Update File with PR Details
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         GITHUB_REPOSITORY: ${{ github.repository }}
+  #         PR_OWNER: ${{ github.event.pull_request.user.login }}
+  #         PR_NUMBER: ${{ github.event.pull_request.number }}
+  #       run: |
+  #         node ${{ env.DIR }}/update-file/update-file.js
