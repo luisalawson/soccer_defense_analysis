@@ -52,6 +52,7 @@ jobs:
         if [[ -n "$NEW_FOLDERS" ]]; then
           echo "New folders detected: $NEW_FOLDERS"
           echo "run_check=true" >> $GITHUB_ENV
+          echo "NEW_FOLDERS=$NEW_FOLDERS" >> $GITHUB_ENV
         else
           echo "No new folders detected."
           echo "run_check=false" >> $GITHUB_ENV
@@ -75,7 +76,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
+        NEW_FOLDERS: ${{ env.NEW_FOLDERS }}
       run: |
+        echo "Checking CODEOWNERS for new folders: $NEW_FOLDERS"
         node ${{ env.DIR }}/codeowners-check/codeowners-check.js
 
 

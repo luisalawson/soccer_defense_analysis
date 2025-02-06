@@ -6,6 +6,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY?.split('/')[1];
 const OWNER = process.env.GITHUB_REPOSITORY?.split('/')[0];
 const PR_NUMBER = process.env.PR_NUMBER;
+const NEW_FOLDERS = process.env.NEW_FOLDERS;
 
 if (!GITHUB_TOKEN || !REPO || !OWNER || !PR_NUMBER) {
     console.error("Missing required environment variables.");
@@ -45,14 +46,8 @@ async function postComment(folderName) {
 async function main() {
     try {
         const files = await getFiles();
-        // if there are more than 20 files changed, we assume the PR is for a snap-in
-        if (files.length < 1) {
-            console.log("Less than 20 files were changed. Assuming no new snap-in created. Skipping CODEOWNERS check.");
-            process.exit(0);
-        }
         const codeowners = files.find(file => file === '.github/CODEOWNERS');
-        const folders = files.map((file) => file.split("/")[0]);
-        const folderNames = [...new Set(folders)];
+        const folderNames = NEW_FOLDERS.split(',');
         let snapInName = '';
         if (folderNames.length > 1) {
             snapInName = 'your-snap-in-name';
