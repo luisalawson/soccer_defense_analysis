@@ -54,7 +54,7 @@ async function main() {
             process.exit(0);
         }
         // if there are more than 20 files added, we assume the PR is for a snap-in
-        if (addedFiles.length < 20) {
+        if (addedFiles.length < 1) {
             console.log("Less than 20 files were added. Assuming no new snap-in created. Skipping CODEOWNERS check.");
             process.exit(0);
         }
