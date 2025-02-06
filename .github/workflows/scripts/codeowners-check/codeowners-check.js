@@ -46,6 +46,8 @@ async function postComment(folderName) {
 async function main() {
     try {
         const [addedFiles, modifiedFiles] = await getFiles();
+        console.log("Added files: ", addedFiles);
+        console.log("Modified files: ", modifiedFiles);
         // no added files found, no snap-in created
         if(addedFiles === undefined){
             console.log("No files were added. Skipping CODEOWNERS check.");
