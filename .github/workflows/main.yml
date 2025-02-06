@@ -48,7 +48,10 @@ jobs:
     - name: Detect new folders
       id: check-new-folders
       run: |
-        NEW_FOLDERS=$(git diff --diff-filter=A --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | awk -F/ '{print $1}' | sort -u | uniq)
+        BASE_SHA="${{ github.event.pull_request.base.sha }}"
+        PR_SHA="${{ github.sha }}"
+        echo "Comparing $BASE_SHA with $PR_SHA"
+        NEW_FOLDERS=$(git diff --diff-filter=A --name-only "$BASE_SHA" "$PR_SHA" | awk -F/ '{print $1}' | sort -u | uniq)
         if [[ -n "$NEW_FOLDERS" ]]; then
           echo "New folders detected: $NEW_FOLDERS"
           echo "run_check=true" >> $GITHUB_ENV
