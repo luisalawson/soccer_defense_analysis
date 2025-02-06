@@ -45,43 +45,22 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Detect new folders
-      id: check-new-folders
-      run: |
-        BASE_SHA="${{ github.event.pull_request.base.sha }}"
-        PR_SHA="${{ github.sha }}"
-        echo "Comparing $BASE_SHA with $PR_SHA"
-        NEW_FOLDERS=$(git diff --diff-filter=A --name-only "$BASE_SHA" "$PR_SHA" | awk -F/ '{print $1}' | sort -u | uniq)
-        if [[ -n "$NEW_FOLDERS" ]]; then
-          echo "New folders detected: $NEW_FOLDERS"
-          echo "run_check=true" >> $GITHUB_ENV
-          echo "NEW_FOLDERS=$NEW_FOLDERS" >> $GITHUB_ENV
-        else
-          echo "No new folders detected."
-          echo "run_check=false" >> $GITHUB_ENV
-        fi
-
     - name: Set up Node.js
-      if: env.run_check == 'true'
       uses: actions/setup-node@v3
       with:
         node-version: 18
 
     - name: Install dependencies
-      if: env.run_check == 'true'
       run: |
         cd ${{ env.DIR }}/codeowners-check
         npm install
 
     - name: Run check
-      if: env.run_check == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
-        NEW_FOLDERS: ${{ env.NEW_FOLDERS }}
       run: |
-        echo "Checking CODEOWNERS for new folders: $NEW_FOLDERS"
         node ${{ env.DIR }}/codeowners-check/codeowners-check.js
 
 
