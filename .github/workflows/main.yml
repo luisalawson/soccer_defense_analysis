@@ -35,7 +35,7 @@ jobs:
         run: |
           node ${{ env.DIR }}/endpoint-tokens-check/endpoint-tokens-check.js
 
-    update-codeowners-check:
+    codeowners-check:
       runs-on: ubuntu-latest
       if: always() # Ensures it runs even if previous jobs fail
 
