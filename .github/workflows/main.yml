@@ -35,33 +35,49 @@ jobs:
         run: |
           node ${{ env.DIR }}/endpoint-tokens-check/endpoint-tokens-check.js
 
-  update-codeowners-check:
-    runs-on: ubuntu-latest
-    if: always() # need to run even if the previous job fails
+    update-codeowners-check:
+      runs-on: ubuntu-latest
+      if: always() # Ensures it runs even if previous jobs fail
 
-    steps:
+      steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - name: Detect new folders
+        id: check-new-folders
+        run: |
+          NEW_FOLDERS=$(git diff --diff-filter=A --name-only ${{ github.event.before }} ${{ github.sha }} | awk -F/ '{print $1}' | sort -u | uniq)
+          if [[ -n "$NEW_FOLDERS" ]]; then
+            echo "New folders detected: $NEW_FOLDERS"
+            echo "run_check=true" >> $GITHUB_ENV
+          else
+            echo "No new folders detected."
+            echo "run_check=false" >> $GITHUB_ENV
+          fi
+
       - name: Set up Node.js
+        if: env.run_check == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
       - name: Install dependencies
+        if: env.run_check == 'true'
         run: |
           cd ${{ env.DIR }}/codeowners-check
           npm install
 
       - name: Run check
+        if: env.run_check == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           node ${{ env.DIR }}/codeowners-check/codeowners-check.js
+
 
   # update-file-on-merge:
   #   runs-on: ubuntu-latest
