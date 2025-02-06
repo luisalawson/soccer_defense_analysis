@@ -24,7 +24,7 @@ async function getFiles(){
     })
     const addedFiles = files.data.filter(file => file.status === "added").map(file => file.filename);
     const modifiedFiles = files.data.filter(file => file.status === "modified" || file.status === "changed").map(file => file.filename);
-    return addedFiles, modifiedFiles;
+    return [addedFiles, modifiedFiles];
 
 }
 
